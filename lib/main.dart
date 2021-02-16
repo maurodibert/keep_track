@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  DatabaseSQL.openDB(recreate: true);
+  DBManager().deleteDB();
   runApp(MyApp());
 }
 

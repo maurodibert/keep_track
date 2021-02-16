@@ -1,18 +1,37 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-class DatabaseSQL {
-  static Future<Database> openDB({bool recreate = false}) async {
-    if (recreate) {
-      deleteDatabase(join(await getDatabasesPath(), 'keep_track.db'));
-      print(' [ DatabaseSQL ] DB has been deleted');
-    }
+class DBManager {
+  static final DBManager _instance = DBManager._internal();
+  _DBHolder _holder;
 
-    return await openDatabase(
-      join(await getDatabasesPath(), 'keep_track.db'),
-      version: 1,
-      onCreate: (db, version) {
-        db.execute('''
+  factory DBManager() {
+    return _instance;
+  }
+
+  DBManager._internal() {
+    _holder = _DBHolder();
+  }
+
+  Future<void> deleteDB() async {
+    final Database db = await _holder.db;
+    deleteDatabase(join(await getDatabasesPath(), 'keep_track.db'));
+    print(' [ DBManager ] DB has been deleted');
+  }
+}
+
+class _DBHolder {
+  Future<Database> _db;
+
+  Future<Database> get db async {
+    if (_db == null) {
+      print(' [ DBManager ] Start DB Creation');
+
+      return await openDatabase(
+        join(await getDatabasesPath(), 'keep_track.db'),
+        version: 1,
+        onCreate: (db, version) {
+          db.execute('''
           CREATE TABLE categories (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
@@ -20,14 +39,14 @@ class DatabaseSQL {
           );
         ''');
 
-        db.insert('categories', {'name': 'food', 'emoji': '🍉'});
-        db.insert('categories', {'name': 'work', 'emoji': '⛏'});
-        db.insert('categories', {'name': 'study', 'emoji': '⌨️'});
-        db.insert('categories', {'name': 'body', 'emoji': '🏋️'});
-        db.insert('categories', {'name': 'relations', 'emoji': '🤗'});
-        db.insert('categories', {'name': 'play', 'emoji': '🏓'});
+          db.insert('categories', {'name': 'food', 'emoji': '🍉'});
+          db.insert('categories', {'name': 'work', 'emoji': '⛏'});
+          db.insert('categories', {'name': 'study', 'emoji': '⌨️'});
+          db.insert('categories', {'name': 'body', 'emoji': '🏋️'});
+          db.insert('categories', {'name': 'relations', 'emoji': '🤗'});
+          db.insert('categories', {'name': 'play', 'emoji': '🏓'});
 
-        db.execute('''
+          db.execute('''
           CREATE TABLE targets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             target_type_id INTEGER,
@@ -37,31 +56,31 @@ class DatabaseSQL {
           );
         ''');
 
-        db.execute('''
+          db.execute('''
           CREATE TABLE target_types (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT
           );
         ''');
 
-        db.insert('target_types', {'name': 'bool'});
-        db.insert('target_types', {'name': 'at_least'});
-        db.insert('target_types', {'name': 'less_than'});
-        db.insert('target_types', {'name': 'exactly'});
+          db.insert('target_types', {'name': 'bool'});
+          db.insert('target_types', {'name': 'at_least'});
+          db.insert('target_types', {'name': 'less_than'});
+          db.insert('target_types', {'name': 'exactly'});
 
-        db.execute('''
+          db.execute('''
           CREATE TABLE frequency_types (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT
           );
         ''');
 
-        db.insert('frequency_types', {'name': 'every_day'});
-        db.insert('frequency_types', {'name': 'some_day'});
-        db.insert('frequency_types', {'name': 'few_times'});
-        db.insert('frequency_types', {'name': 'repeat'});
+          db.insert('frequency_types', {'name': 'every_day'});
+          db.insert('frequency_types', {'name': 'some_day'});
+          db.insert('frequency_types', {'name': 'few_times'});
+          db.insert('frequency_types', {'name': 'repeat'});
 
-        db.execute('''
+          db.execute('''
           CREATE TABLE frequencies (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             frequency_type_id INTEGER,
@@ -70,18 +89,18 @@ class DatabaseSQL {
           );
         ''');
 
-        db.execute('''
+          db.execute('''
           CREATE TABLE priorities (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT
           );
         ''');
 
-        db.insert('priorities', {'name': 'high'});
-        db.insert('priorities', {'name': 'normal'});
-        db.insert('priorities', {'name': 'low'});
+          db.insert('priorities', {'name': 'high'});
+          db.insert('priorities', {'name': 'normal'});
+          db.insert('priorities', {'name': 'low'});
 
-        db.execute('''
+          db.execute('''
           CREATE TABLE habits (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
@@ -98,7 +117,12 @@ class DatabaseSQL {
             FOREIGN KEY(priority_id) REFERENCES priorities(id) ON DELETE CASCADE
           );
         ''');
-      },
-    );
+
+          print(' [ DBManager ] DB has been created');
+        },
+      );
+    }
+
+    return _db;
   }
 }
