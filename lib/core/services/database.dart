@@ -14,7 +14,7 @@ class DBManager {
   }
 
   Future<void> deleteDB() async {
-    final Database db = await _holder.db;
+    await _holder.db;
     deleteDatabase(join(await getDatabasesPath(), 'keep_track.db'));
     print(' [ DBManager ] DB has been deleted');
   }

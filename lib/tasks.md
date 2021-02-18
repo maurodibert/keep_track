@@ -1,2 +1,5 @@
-# continue db
-- decide if submodels, go into db: category is a table? why? and target_frequency?
+# Tasks
+- home screen
+-- tabs
+- my habits tab
+- create habit
